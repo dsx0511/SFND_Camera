@@ -7,6 +7,55 @@
 
 using namespace std;
 
+cv::Mat PerformNMS(cv::Mat corner_img, cv::Mat vis_img, int minResponse)
+{
+    // define size of sliding window
+    int sw_size = 7;                  // should be odd so we can center it on a pixel and have symmetry in all directions
+    int sw_dist = floor(sw_size / 2); // number of pixels to left/right and top/down to investigate
+
+    // create output image
+    vector<cv::KeyPoint> keyPoints;
+
+    // loop over all pixels in the corner image
+    for (int r = sw_dist; r < corner_img.rows - sw_dist - 1; r++) // rows
+    {
+        for (int c = sw_dist; c < corner_img.cols - sw_dist - 1; c++) // cols
+        {
+            // loop over all pixels within sliding window around the current pixel
+            int max_val{0}; // keeps track of strongest response
+            for (int rs = r - sw_dist; rs <= r + sw_dist; rs++)
+            {
+                for (int cs = c - sw_dist; cs <= c + sw_dist; cs++)
+                {
+                    // check wether max_val needs to be updated
+                    int new_val = (int) corner_img.at<float>(rs, cs);
+                    max_val = max_val < new_val ? new_val : max_val;
+                }
+            }
+
+            int current_val = (int) corner_img.at<float>(r, c);
+            // check wether current pixel is local maximum
+            if ((current_val == max_val) && (current_val > minResponse))
+            {
+                cv::KeyPoint kp(c, r, sw_dist * 2);
+                keyPoints.push_back(kp);
+            }
+                
+        }
+    }
+
+    cv::Mat result_img;
+    cv::drawKeypoints(vis_img, keyPoints, result_img);
+  	  
+    // visualize results
+    std::string windowName = "NMS Result Image";
+    cv::namedWindow(windowName, 5);
+    cv::imshow(windowName, result_img);
+    cv::waitKey(0);
+  
+    return result_img;
+}
+
 void cornernessHarris()
 {
     // load image from file
@@ -37,6 +86,52 @@ void cornernessHarris()
     // and perform a non-maximum suppression (NMS) in a local neighborhood around 
     // each maximum. The resulting coordinates shall be stored in a list of keypoints 
     // of the type `vector<cv::KeyPoint>`.
+    PerformNMS(dst_norm, dst_norm_scaled, minResponse);
+
+    // vector<cv::KeyPoint> keyPoints;
+
+    // for (int r = 0; r < dst_norm.rows; r++)
+    // {
+    //     for (int c = 0; c < dst_norm.cols; c++)
+    //     {
+    //         int response = (int) dst_norm.at<float>(r, c);
+    //         if (response > minResponse)
+    //         {
+    //             cv::KeyPoint new_kp(c, r, 6, -1, response, 0, -1);
+    //             // cv::KeyPoint new_kp;
+    //             // new_kp.pt = cv::Point2f(r, c);
+    //             // new_kp.size = 2 * apertureSize;
+    //             // new_kp.response = response;
+
+    //             bool overlap = false;
+    //             for(auto kp = keyPoints.begin(); kp != keyPoints.end(); ++kp)
+    //             {
+    //                 float overlap_area = cv::KeyPoint::overlap(new_kp, *kp);
+    //                 if (overlap_area > 0)
+    //                 {
+    //                     overlap = true;
+    //                     if (new_kp.response > (*kp).response)
+    //                     {
+    //                         *kp = new_kp;
+    //                         break;
+    //                     }
+    //                 }
+    //             }
+
+    //             if (!overlap)
+    //                 keyPoints.push_back(new_kp);
+    //         }
+    //     }
+    // }
+
+    // cv::Mat dst_with_kp;
+    // cv::drawKeypoints(dst_norm_scaled, keyPoints, dst_with_kp, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+    // // visualize results
+    // string windowName2 = "Harris corner key points.";
+    // cv::namedWindow(windowName2, 4);
+    // cv::imshow(windowName2, dst_with_kp);
+    // cv::waitKey(0);
 
 }
 
