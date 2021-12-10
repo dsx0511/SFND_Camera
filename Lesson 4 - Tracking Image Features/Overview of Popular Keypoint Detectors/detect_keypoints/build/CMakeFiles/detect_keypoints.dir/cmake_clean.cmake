@@ -1,7 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/detect_keypoints.dir/src/detect_keypoints.cpp.o"
-  "detect_keypoints.pdb"
+  "CMakeFiles/detect_keypoints.dir/src/detect_keypoints.cpp.o.d"
   "detect_keypoints"
+  "detect_keypoints.pdb"
 )
 
 # Per-language clean rules from dependency scanning.
