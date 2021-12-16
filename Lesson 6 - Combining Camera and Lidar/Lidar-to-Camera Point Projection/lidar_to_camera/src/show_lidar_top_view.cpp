@@ -29,13 +29,20 @@ void showLidarTopview()
         int x = (-yw * imageSize.width / worldSize.width) + imageSize.width / 2;
 
 
-        cv::circle(topviewImg, cv::Point(x, y), 5, cv::Scalar(0, 0, 255), -1);
+        // cv::circle(topviewImg, cv::Point(x, y), 5, cv::Scalar(0, 0, 255), -1);
         
         // TODO: 
         // 1. Change the color of the Lidar points such that 
         // X=0.0m corresponds to red while X=20.0m is shown as green.
+        float r = 255.0 - xw / worldSize.height * 255.0;
+        float g = xw / worldSize.height * 255.0;
+
         // 2. Remove all Lidar points on the road surface while preserving 
         // measurements on the obstacles in the scene.
+
+        float zw = (*it).z;
+        if (zw > - 1.4)
+            cv::circle(topviewImg, cv::Point(x, y), 5, cv::Scalar(0, g, r), -1);
     }
 
     // plot distance markers
@@ -50,6 +57,7 @@ void showLidarTopview()
     // display image
     string windowName = "Top-View Perspective of LiDAR data";
     cv::namedWindow(windowName, 2);
+    cv::resize(topviewImg, topviewImg, cv::Size(500, 1000));
     cv::imshow(windowName, topviewImg);
     cv::waitKey(0); // wait for key to be pressed
 }
