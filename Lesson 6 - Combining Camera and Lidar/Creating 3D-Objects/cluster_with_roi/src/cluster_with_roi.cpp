@@ -64,6 +64,7 @@ void showLidarTopview(std::vector<LidarPoint> &lidarPoints, cv::Size worldSize, 
     // display image
     string windowName = "Top-View Perspective of LiDAR data";
     cv::namedWindow(windowName, 2);
+    cv::resize(topviewImg, topviewImg, cv::Size(500, 1000));
     cv::imshow(windowName, topviewImg);
     cv::waitKey(0); // wait for key to be pressed
 }
@@ -97,6 +98,8 @@ void clusterLidarWithROI(std::vector<BoundingBox> &boundingBoxes, std::vector<Li
 
         double shrinkFactor = 0.10;
         vector<vector<BoundingBox>::iterator> enclosingBoxes; // pointers to all bounding boxes which enclose the current Lidar point
+
+        vector<vector<BoundingBox>::iterator> it_bboxes;
         for (vector<BoundingBox>::iterator it2 = boundingBoxes.begin(); it2 != boundingBoxes.end(); ++it2)
         {
             // shrink current bounding box slightly to avoid having too many outlier points around the edges
@@ -109,12 +112,20 @@ void clusterLidarWithROI(std::vector<BoundingBox> &boundingBoxes, std::vector<Li
             // check wether point is within current bounding box
             if (smallerBox.contains(pt))
             {
-                it2->lidarPoints.push_back(*it1);
-                lidarPoints.erase(it1);
-                it1--;
-                break;
+                // it2->lidarPoints.push_back(*it1);
+                // lidarPoints.erase(it1);
+                // it1--;
+                // break; 
+                it_bboxes.push_back(it2);
             }
         } // eof loop over all bounding boxes
+
+        if (it_bboxes.size() == 1)
+        {
+            it_bboxes[0]->lidarPoints.push_back(*it1);
+            lidarPoints.erase(it1);
+            it1--;
+        }
         
       // TODO - check wether point has been enclosed by one or by multiple boxes. 
       // Accordingly, add Lidar point to bounding box
